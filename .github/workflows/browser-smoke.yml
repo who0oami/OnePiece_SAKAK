@@ -16,7 +16,10 @@ jobs:
           python-version: '3.12'
       - run: pip install playwright
       - run: python -m playwright install --with-deps chromium
+      - run: node tests/review-workflow.test.js && node tests/review-integration.test.js && node tests/chatbot.test.js
+      - run: python tests/test_chatbot_server.py
       - run: python tests/browser_smoke.py
+      - run: python tests/browser_llm.py
       - uses: actions/upload-artifact@v4
         if: always()
         with:

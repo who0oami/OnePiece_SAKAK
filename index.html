@@ -202,7 +202,7 @@ const statusChip = (c, forCitizen) => {
 
 /* ===== 신청 도우미 챗봇 (시연용: 규칙 기반 답변, 실제 문자·메일은 발송되지 않음) ===== */
 const BOT_SEED = {"procs":[{"id":"s1","dept":"주민센터 복지팀","name":"긴급복지지원·기초생활보장 급여 신청","descr":"실직 등으로 생계가 어려워진 가구가 긴급복지지원 또는 기초생활보장 급여를 신청합니다.","target":"실직·소득 단절로 생계가 곤란한 가구 (시연용 예시)","how_to":"온라인으로 서류를 첨부해 기안한 뒤, 신청서와 동의서는 주민센터를 방문해 작성합니다.","notes":["선행 절차: 고용센터에서 실업급여 신청과 구직 등록 결과를 먼저 확인하세요. (시연 가정)","같은 소득·재산 서류를 다시 내지 않도록 정부24 연계 서류를 자동으로 대조합니다.","이직일과 소득 신고 시점이 다르면 담당자 검토로 분류될 수 있습니다."]},{"id":"s2","dept":"건강보험공단 장기요양운영센터","name":"노인장기요양 인정·장애인 등록 신청","descr":"거동이 어려워진 부모를 위해 노인장기요양 등급과 장애인 등록을 신청합니다. 자녀 등 가족이 대리 신청할 수 있습니다.","target":"장기요양 또는 장애 판정이 필요한 본인, 대리 신청 시 가족 (시연용 예시)","how_to":"온라인으로 서류를 첨부해 기안한 뒤, 신청서와 본인 의사 확인서는 현장방문으로 작성합니다.","notes":["대리 신청은 위임장과 본인 의사 확인서, 가족관계 확인이 필요합니다.","판정 결과가 나오기 전까지 임시 지원 연계를 안내받을 수 있습니다. (시연 가정)","서류 위·변조나 본인 의사 불확인이 의심되면 담당자 검토로 분류됩니다."]},{"id":"s3","dept":"국민연금공단 유족연금팀","name":"유족연금·사망일시금 청구 및 상속 정리","descr":"가족이 사망한 뒤 사망 신고, 유족연금(사망일시금) 청구, 건강보험 자격 변동을 함께 신청합니다.","target":"배우자 등 가족이 사망한 유족 (시연용 예시)","how_to":"온라인으로 서류를 첨부해 기안한 뒤, 사망 신고서와 청구서는 현장방문으로 작성합니다.","notes":["기관마다 사망 정보가 반영되는 시점이 달라 연계 정보와 신청 내용이 다를 수 있습니다.","사망 후에도 급여가 이어지는 사후 수급이 의심되면 담당자 검토로 분류됩니다.","안심상속 원스톱 조회 결과를 함께 제출합니다. (시연 가정)"]}],"docs":{"s1":[{"doc_id":"s1d1","name":"긴급복지지원(기초생활보장) 신청서","kind":"manual","req":"필수 신청서"},{"doc_id":"s1d2","name":"소득·재산 확인 동의서","kind":"manual","req":"필수 신청서"},{"doc_id":"s1d3","name":"이직확인서 (고용센터 발급)","kind":"gov24","req":"필수"},{"doc_id":"s1d4","name":"임대차계약서","kind":"upload","req":"해당자"},{"doc_id":"s1d5","name":"통장 사본","kind":"upload","req":"필수"},{"doc_id":"s1d6","name":"소득·재산 확인 서류","kind":"gov24","req":"필요 시"}],"s2":[{"doc_id":"s2d1","name":"노인장기요양 인정 신청서","kind":"manual","req":"필수 신청서"},{"doc_id":"s2d2","name":"본인 의사 확인서 (대리 신청 시 본인 서명)","kind":"manual","req":"대리 신청 시"},{"doc_id":"s2d3","name":"의사소견서","kind":"upload","req":"필수"},{"doc_id":"s2d4","name":"장애진단서","kind":"upload","req":"필수"},{"doc_id":"s2d5","name":"대리신청 위임장","kind":"upload","req":"대리 신청 시"},{"doc_id":"s2d6","name":"대리인 관계 확인 서류 (가족관계)","kind":"gov24","req":"대리 신청 시"},{"doc_id":"s2d7","name":"소득 증빙 서류","kind":"gov24","req":"필요 시"}],"s3":[{"doc_id":"s3d1","name":"사망 신고서","kind":"manual","req":"필수 신청서"},{"doc_id":"s3d2","name":"유족연금(사망일시금) 청구서","kind":"manual","req":"필수 신청서"},{"doc_id":"s3d3","name":"사망진단서","kind":"upload","req":"필수"},{"doc_id":"s3d4","name":"가족관계 기록사항에 관한 증명서","kind":"gov24","req":"필수"},{"doc_id":"s3d5","name":"안심상속 재산 조회 결과","kind":"gov24","req":"필수"},{"doc_id":"s3d6","name":"건강보험 자격 변동 신고서","kind":"upload","req":"필수"}]}}; // seed.sql의 합성 절차·서류 정의만, 신청자 데이터 제외
-S.bot = { open: false, msgs: [], seen: {}, unread: 0, pid: null, pending: null, draft: '' };
+S.bot = { open: false, msgs: [], seen: {}, unread: 0, pid: null, pending: null, draft: '', llmEnabled: false, llmBusy: false };
 S.dbReady = false;
 const BOT_AV = '<svg class="bot-av" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><line x1="32" y1="6" x2="32" y2="14" stroke="#0B2A5B" stroke-width="3" stroke-linecap="round"/><circle class="ant" cx="32" cy="5" r="4" fill="#F59E0B"/><rect x="10" y="14" width="44" height="36" rx="14" fill="#256EF4"/><rect x="16" y="21" width="32" height="22" rx="10" fill="#fff"/><g class="eyes"><ellipse cx="25" cy="31" rx="3" ry="4" fill="#0B2A5B"/><ellipse cx="39" cy="31" rx="3" ry="4" fill="#0B2A5B"/></g><path d="M26 38 Q32 43 38 38" stroke="#0B2A5B" stroke-width="2.5" fill="none" stroke-linecap="round"/><g class="wave"><circle cx="54" cy="46" r="5" fill="#256EF4"/></g></svg>';
 function botSay(text, chips) { S.bot.msgs.push({ from: 'bot', text: text, chips: chips || null }); if (!S.bot.open) S.bot.unread++; }
@@ -250,9 +250,39 @@ function botAnswer(t){
  if(intent)return botRespond(intent,p);
  botSay('등록된 안내에서 답을 찾지 못했어요. 지원 서비스, 필요 서류, 신청 방법 또는 진행 상태를 물어봐 주세요.',BOT_MENU);
 }
-function botSubmit(value){if(S.role!=='citizen')return;const t=String(value||'').trim().slice(0,500);if(!t)return;S.bot.draft='';if(/\d{6}[- ]?\d{7}|주민등록번호|계좌번호|비밀번호/.test(t))botMe('개인정보 포함 가능 질문 (표시 제한)');else botMe(t);botAnswer(t);renderBot();}
+const botPrivate=q=>/주민등록번호|계좌번호|비밀번호|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|\d(?:[\s-]*\d){6,}/.test(q);
+function botSubmit(value){
+ if(S.role!=='citizen'||S.bot.llmBusy)return;
+ const t=String(value||'').trim().slice(0,500);if(!t)return;S.bot.draft='';
+ if(botPrivate(t)){botMe('개인정보 포함 가능 질문 (표시 제한)');botSay('실제 개인정보는 입력하지 말아 주세요. 서비스 이름이나 필요한 서류만 질문해 주세요.');renderBot();return;}
+ botMe(t);
+ // 상태·발송·기간은 로컬 기능만 사용, 외부 모델에 보내지 않음.
+ if(S.bot.llmEnabled&&typeof location!=='undefined'&&location.protocol==='http:'&&!/상태|진행|결과|접수됐|문자|sms|이메일|메일|발송|보내|기간|언제|며칠|걸려/i.test(t))return botAskLLM(t);
+ botAnswer(t);renderBot();
+}
+async function botAskLLM(t){
+ S.bot.llmBusy=true;renderBot();
+ const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),20000);
+ try{
+  const current=botProc(S.bot.pid)?S.bot.pid:'';
+  const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:t,current_pid:current}),signal:ctl.signal});
+  if(!r.ok)throw Error('model unavailable');
+  const x=await r.json(),valid=['docs','where','target','apply','dept','proxy','services','unknown'];
+  if(x.mode!=='gemini'||!valid.includes(x.intent)||typeof x.pid!=='string'||(x.pid&&!botProc(x.pid)))throw Error('invalid route');
+  if(x.intent==='unknown'){botSay('AI 질문 분류에서 정확한 안내를 찾지 못했어요. 서비스와 질문 종류를 선택해 주세요.',BOT_MENU);}
+  else if(x.intent==='services'){botChoose('docs');}
+  else{S.bot.pid=x.pid||null;S.bot.pending=null;botSay('AI 질문 분류 완료 · 안내 내용은 등록된 시연 자료를 사용합니다.');botRespond(x.intent,botProc(S.bot.pid));}
+ }catch(e){botSay('AI 연결이 원활하지 않아 기존 시연 안내로 전환합니다.');botAnswer(t);}
+ finally{clearTimeout(timer);S.bot.llmBusy=false;renderBot();}
+}
+function botToggleLLM(){
+ if(S.role!=='citizen'||S.bot.llmBusy)return;
+ if(S.bot.llmEnabled){S.bot.llmEnabled=false;renderBot();return;}
+ if(typeof location==='undefined'||location.protocol!=='http:'||!['127.0.0.1','localhost'].includes(location.hostname)){botSay('AI 기능은 로컬 챗봇 서버로 접속해야 이용할 수 있어요. 기존 안내는 계속 사용할 수 있습니다.');renderBot();return;}
+ S.bot.llmEnabled=true;botSay('AI 질문 분류 모드가 켜졌어요. 일반 질문과 선택한 서비스 ID만 Gemini에 전송됩니다. 실제 개인정보는 입력하지 마세요.');renderBot();
+}
 function botChip(v){
- if(S.role!=='citizen')return;
+ if(S.role!=='citizen'||S.bot.llmBusy)return;
  const [act,pid]=String(v||'').split(':');
  if(act==='service'){const p=botProc(pid);if(!p)return;S.bot.pid=pid;const it=S.bot.pending||'docs';S.bot.pending=null;botMe(p.name);botRespond(it,p);}
  else if(act==='guide'){if(!botProc(pid))return;if(!S.dbReady)botSay('DB 연결 후 실제 신청 화면을 열 수 있어요. 현재는 안내만 가능합니다.');else{S.procId=pid;S.step='guide';botOnGuide(pid);render();return;}}
@@ -270,8 +300,8 @@ function renderBot() {
   const msgs = b.msgs.map((m) => '<div class="bmsg ' + m.from + '">' + esc(m.text).replace(/\n/g, '<br>') + (m.chips ? '<div class="bchips">' + m.chips.map((x) => '<button class="bchip" data-act="botchip" data-v="' + esc(x.k) + '">' + esc(x.t) + '</button>').join('') + '</div>' : '') + '</div>').join('');
   const panel = b.open ? '<section class="bot-panel" role="dialog" aria-label="신청 도우미"><div class="bot-head">' + BOT_AV.replace('width="56" height="56"', 'width="36" height="36"') + '<b>신청 도우미 · 시연</b><button class="btn" style="min-height:32px;padding:0 10px" data-act="botclose" aria-label="닫기">닫기</button></div>' +
     '<div class="bot-log" id="bot-log" aria-live="polite">' + (msgs || '<div class="bmsg bot">안녕하세요, 신청 도우미예요. 서비스를 고르면 필요한 서류를 알려드려요.</div>') + '</div>' +
-    '<div class="bot-source">' + esc(botSource()) + ' · 실제 신청·발송 아님</div><div class="bot-cons">수신 동의(시연) <button class="' + (c.sms ? 'on' : '') + '" data-act="botconsent" data-v="sms" aria-pressed="' + c.sms + '">문자 ' + (c.sms ? '동의' : '미동의') + '</button><button class="' + (c.email ? 'on' : '') + '" data-act="botconsent" data-v="email" aria-pressed="' + c.email + '">이메일 ' + (c.email ? '동의' : '미동의') + '</button></div>' +
-    '<div class="bot-foot"><input type="text" id="bot-in" maxlength="500" placeholder="서비스 또는 필요한 서류 질문" aria-label="질문 입력" style="flex:1"><button class="btn pri" data-act="botsend">보내기</button></div></section>' : '';
+    '<div class="bot-source">' + esc(botSource()) + ' · 실제 신청·발송 아님</div><div class="bot-cons"><button data-act="botllm" aria-pressed="'+b.llmEnabled+'"'+(b.llmBusy?' disabled':'')+'>'+ (b.llmEnabled?'AI 질문 분류 켜짐':'AI 질문 분류 켜기')+'</button><span>합성 질문만 전송</span></div><div class="bot-cons">수신 동의(시연) <button class="' + (c.sms ? 'on' : '') + '" data-act="botconsent" data-v="sms" aria-pressed="' + c.sms + '">문자 ' + (c.sms ? '동의' : '미동의') + '</button><button class="' + (c.email ? 'on' : '') + '" data-act="botconsent" data-v="email" aria-pressed="' + c.email + '">이메일 ' + (c.email ? '동의' : '미동의') + '</button></div>' +
+    '<div class="bot-foot"><input type="text" id="bot-in" maxlength="500" placeholder="서비스 또는 필요한 서류 질문" aria-label="질문 입력" style="flex:1"'+(b.llmBusy?' disabled':'')+'><button class="btn pri" data-act="botsend"'+(b.llmBusy?' disabled':'')+'>'+(b.llmBusy?'분류 중…':'보내기')+'</button></div></section>' : '';
   const fab = '<button class="bot-fab" data-act="' + (b.open ? 'botclose' : 'botopen') + '" aria-label="신청 도우미 ' + (b.open ? '닫기' : '열기') + '">' + BOT_AV + (!b.open && b.unread ? '<span class="dot">' + b.unread + '</span>' : '') + '</button>';
   root.innerHTML = panel + fab;
   const ni = $('bot-in'); if (ni) { ni.value = val; if (focus) ni.focus(); }
@@ -594,7 +624,7 @@ async function saveForm(id) {
 document.addEventListener('click', (ev) => {
   const t = ev.target.closest('[data-act]'); if (!t || t.tagName === 'INPUT') return;
   const a = t.dataset.act, v = t.dataset.v;
-  if(!S.dbReady&&!['botopen','botclose','botconsent','botsend','botchip','reload'].includes(a))return;
+  if(!S.dbReady&&!['botopen','botclose','botconsent','botsend','botchip','botllm','reload'].includes(a))return;
   S.toast = '';
   if (a === 'role') { if(v!=='citizen'&&v!=='staff')return; S.role=v; S.openId=null;S.modal=null; render(); }
   else if(a==='staff-scope'){if(S.role!=='staff')return;const s=WF.scopes(S.lines)[Number(v)];if(!s)return;S.dept=s.dept;S.staffSeq=s.seq;S.openId=null;S.modal=null;render();}
@@ -610,6 +640,7 @@ document.addEventListener('click', (ev) => {
   else if (a === 'botopen') { if(S.role==='citizen'){botOpen();renderBot();} }
   else if (a === 'botclose') { S.bot.open = false; renderBot(); }
   else if (a === 'botconsent') { if(S.role==='citizen'&&['sms','email'].includes(v)){ME.consent[v]=!ME.consent[v];renderBot();} }
+  else if (a === 'botllm') botToggleLLM();
   else if (a === 'botsend') {const i=$('bot-in');botSubmit(i?i.value:'');}
   else if (a === 'botchip') botChip(v);
   else if (a === 'search') { S.q = ($('q-input') || {}).value || ''; render(); }
