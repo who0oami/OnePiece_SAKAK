@@ -40,6 +40,10 @@ class RouterTest(unittest.TestCase):
             self.assertTrue(req.full_url.endswith("/gemini-test:generateContent"))
             self.assertEqual(req.get_header("X-goog-api-key"), "synthetic-test-key")
             data=json.loads(req.data)
+            schema=data["generationConfig"]["responseJsonSchema"]
+            self.assertEqual(schema["type"],"object")
+            self.assertEqual(schema["required"],["intent","pid"])
+            self.assertNotIn("responseSchema",data["generationConfig"])
             q=json.loads(data["contents"][0]["parts"][0]["text"])
             self.assertEqual(set(q), {"services","current_pid","question"})
             self.assertEqual(q["question"], "어머니 돌봄 신청")
