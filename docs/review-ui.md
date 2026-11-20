@@ -34,3 +34,14 @@ node tests/review-workflow.test.js — 권한/단계 판정 테스트 19개 통�
 - PASS: wf_procedures · wf_proc_docs · wf_approval_line 읽기, engine health, check-doc(state=ok), check-case(findings=4)
 - FAIL 1건: wf_cases 조회 HTTP 400 — 공유 DB에 `findings` 칸이 아직 없음 (`migrations/002_double_check.sql` 미적용, 의도적으로 보류 중)
 - 병합 후 `node tests/*.test.js` 53건(19+15+19) 모두 통과
+
+## LLM 질문 분류 (별도 브랜치)
+- 기존 Gemini 판독 엔진과 독립적인 127.0.0.1 로컬 챗봇 서버. 사용자가 명시적으로 AI 질문 분류 켜기 선택 시 일반 질문과 서비스 ID만 전송.
+- 분류 결과의 허용 의도·서비스 ID 검증 후 기존 DB/seed 기반 안내. 모델의 자유 텍스트를 안내로 표시하지 않음. 상태·발송·기간 질문은 로컬 처리. 오류 시 규칙 기반 fallback.
+- 모델 키는 환경변수, 실제 외부 Gemini API 응답은 키/모델이 제공되지 않아 아직 미검증. 운영 인증 및 실제 개인정보 사용 범위 아님.
+- Chromium 기존 챗봇 검증 PASS: https://github.com/who0oami/OnePiece_SAKAK/actions/runs/44672181476 (외부 DB/판독 엔진 차단).
+
+## 실제 LLM 검증 준비
+- 기본 모델: `gemini-3.5-flash-lite` (계정별 모델 접근 여부는 실제 호출로 검증 필요). 환경변수로 변경 가능.
+- `tests/live_gemini_smoke.py`: 합성 질문 3개를 실제 Gemini REST API로 분류해 expected intent + pid 일치 여부 확인. 키 없는 경우 미실행으로 기록.
+- CI에서 `GEMINI_API_KEY` secret이 존재할 때만 호출. 모델 접근/실제 응답 품질은 테스트 로그가 통과해야 확인된 것으로 간주한다.

@@ -34,3 +34,33 @@ python3 welfare_ai/src/server.py --ai     # Gemini 판독까지 (welfare_ai/.env
 
 - 엔진은 127.0.0.1에서만 열리고, 로컬에서 연 앱만 호출할 수 있습니다(CORS). 파일은 판독 후 바로 지웁니다.
 - PDF·텍스트·사진(JPG·PNG)을 판독합니다. 사진은 엔진을 `--ai`로 켜면 Gemini가 직접 읽고, 아니면 무료 OCR로 읽어 "원본 확인 필요" 경고를 붙입니다. 모든 데이터는 합성 데이터입니다.
+
+
+## LLM 신청 도우미 (선택 기능, Gemini 질문 분류)
+
+실제 수급 조건/서류 목록을 생성형 모델이 임의로 만들지 않도록 Gemini는 질문의 서비스 ID와 의도만 반환하고, 기존 등록 데이터로 안내한다. Gemini 키는 서버 환경변수로만 관리한다.
+
+1. Gemini API 키 및 계정에서 사용 가능한 모델 ID를 준비한다. 실제 개인정보는 입력하지 않는다.
+2. 별도 판독 엔진은 기존 방식대로 사용할 수 있다.
+3. 로컬 앱 서버를 실행한다 (기존 8000 포트 서버가 있다면 종료하거나 CHATBOT_PORT로 변경).
+
+```bash
+export GEMINI_API_KEY='본인 키를 로컬에서만 입력'
+export GEMINI_MODEL='gemini-3.5-flash-lite' # 선택: 계정에서 가능한 모델로 변경
+python3 chatbot_server.py
+```
+
+4. http://127.0.0.1:8000 에 접속해 챗봇에서 AI 질문 분류 켜기를 누른다.
+5. 키 미설정/모델 오류/시간 초과 시 기존 규칙 기반 안내를 사용한다. 상태 및 발송은 외부 LLM에 보내지 않는다.
+
+GET /api/chat/health: 설정 유무만 반환 (실제 모델 연결 확인이 아님).
+POST /api/chat: question, current_pid만 수신 → mode, intent, pid 반환. 실제 Gemini 호출은 키 필요 (기본 모델: gemini-3.5-flash-lite, 계정별 접근 가능 여부에 따라 변경).
+`python3 tests/test_chatbot_server.py` (모형 응답 테스트), `python3 tests/browser_llm.py` (실제 Chromium, 모형 Gemini 응답 + 실제 로컬 503 fallback)으로 검증.
+
+공유 DB/실제 문자 발송은 변경하지 않음. 로컬 합성 데이터 시연용이며 운영 배포, 인증, 사용자별 비용 제한, 개인정보 보호는 별도 필요.
+
+### 실제 Gemini 응답 점검
+- Google AI Studio에서 API 키를 발급받아 서버 환경변수 `GEMINI_API_KEY` 또는 개인 Fork의 GitHub Actions repository secret으로 등록. 키는 커밋/노션/채팅에 넣지 않는다.
+- 기본 모델은 `gemini-3.5-flash-lite`이며 `GEMINI_MODEL`로 변경 가능. 모델 목록: https://ai.google.dev/gemini-api/docs/models
+- `python3 tests/live_gemini_smoke.py`: 실제 Gemini REST API에 합성 질문 3개를 전송해 의도·서비스 ID가 예상값과 일치하는지 확인한다. 키가 없으면 종료코드 2로 미실행 표시.
+- GitHub Actions Browser smoke의 Live Gemini 단계는 키가 등록된 경우만 호출한다. 미등록은 NOT RUN으로 기록한다. 외부 모델에 실제 개인정보나 서류를 보내지 않는다.
