@@ -40,6 +40,10 @@ class RouterTest(unittest.TestCase):
             self.assertTrue(req.full_url.endswith("/gemini-test:generateContent"))
             self.assertEqual(req.get_header("X-goog-api-key"), "synthetic-test-key")
             data=json.loads(req.data)
+            schema=data["generationConfig"]["responseJsonSchema"]
+            self.assertEqual(schema["type"],"object")
+            self.assertEqual(schema["required"],["intent","pid"])
+            self.assertNotIn("responseSchema",data["generationConfig"])
             q=json.loads(data["contents"][0]["parts"][0]["text"])
             self.assertEqual(set(q), {"services","current_pid","question"})
             self.assertEqual(q["question"], "어머니 돌봄 신청")
@@ -47,6 +51,14 @@ class RouterTest(unittest.TestCase):
             return io.BytesIO(json.dumps({"candidates":[{"content":{"parts":[{"text":'{"intent":"apply","pid":"s2"}'}]}}]}).encode())
         with patch.dict(os.environ, {"GEMINI_API_KEY":"synthetic-test-key","GEMINI_MODEL":"gemini-test"}):
             self.assertEqual(app.classify("어머니 돌봄 신청","",fake), {"intent":"apply","pid":"s2"})
+    def test_proxy_priority(self):
+        base={"intent":"docs","pid":"s2"}
+        for question in ("어머니 대리 신청에 필요한 서류", "위임장 준비 서류", "가족이 대신 접수"):
+            self.assertEqual(app.refine_route(question,base),{"intent":"proxy","pid":"s2"})
+        self.assertEqual(app.refine_route("어머니 돌봄 서류",base),base)
+        for intent in ("unknown","target","dept","where"):
+            route={"intent":intent,"pid":"s2"}
+            self.assertEqual(app.refine_route("대리 신청",route),route)
     def test_invalid_provider_response(self):
         def fake(req, timeout):
             return io.BytesIO(b'{"candidates":[{"content":{"parts":[{"text":"not JSON"}]}}]}')
