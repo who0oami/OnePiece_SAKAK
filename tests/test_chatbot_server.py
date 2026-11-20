@@ -27,6 +27,9 @@ class RouterTest(unittest.TestCase):
         with patch.dict(os.environ, {"GEMINI_API_KEY":"", "GEMINI_MODEL":""}):
             with self.assertRaises(app.ConfigError):
                 app.model_config()
+    def test_default_model(self):
+        with patch.dict(os.environ, {"GEMINI_API_KEY":"synthetic-test-key", "GEMINI_MODEL":""}):
+            self.assertEqual(app.model_config(), ("synthetic-test-key", app.DEFAULT_MODEL))
     def test_model_route_whitelist(self):
         for r in ({"intent":"send","pid":"s1"}, {"intent":"docs","pid":"other"}, {"intent":"docs","pid":"s1","answer":"fake"}):
             with self.assertRaises(ValueError):

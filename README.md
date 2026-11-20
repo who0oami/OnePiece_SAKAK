@@ -46,7 +46,7 @@ python3 welfare_ai/src/server.py --ai     # Gemini 판독까지 (welfare_ai/.env
 
 ```bash
 export GEMINI_API_KEY='본인 키를 로컬에서만 입력'
-export GEMINI_MODEL='사용 가능한 Gemini 모델 ID'
+export GEMINI_MODEL='gemini-3.5-flash-lite' # 선택: 계정에서 가능한 모델로 변경
 python3 chatbot_server.py
 ```
 
@@ -54,7 +54,13 @@ python3 chatbot_server.py
 5. 키 미설정/모델 오류/시간 초과 시 기존 규칙 기반 안내를 사용한다. 상태 및 발송은 외부 LLM에 보내지 않는다.
 
 GET /api/chat/health: 설정 유무만 반환 (실제 모델 연결 확인이 아님).
-POST /api/chat: question, current_pid만 수신 → mode, intent, pid 반환. 실제 Gemini 호출은 키와 모델 필요.
+POST /api/chat: question, current_pid만 수신 → mode, intent, pid 반환. 실제 Gemini 호출은 키 필요 (기본 모델: gemini-3.5-flash-lite, 계정별 접근 가능 여부에 따라 변경).
 `python3 tests/test_chatbot_server.py` (모형 응답 테스트), `python3 tests/browser_llm.py` (실제 Chromium, 모형 Gemini 응답 + 실제 로컬 503 fallback)으로 검증.
 
 공유 DB/실제 문자 발송은 변경하지 않음. 로컬 합성 데이터 시연용이며 운영 배포, 인증, 사용자별 비용 제한, 개인정보 보호는 별도 필요.
+
+### 실제 Gemini 응답 점검
+- Google AI Studio에서 API 키를 발급받아 서버 환경변수 `GEMINI_API_KEY` 또는 개인 Fork의 GitHub Actions repository secret으로 등록. 키는 커밋/노션/채팅에 넣지 않는다.
+- 기본 모델은 `gemini-3.5-flash-lite`이며 `GEMINI_MODEL`로 변경 가능. 모델 목록: https://ai.google.dev/gemini-api/docs/models
+- `python3 tests/live_gemini_smoke.py`: 실제 Gemini REST API에 합성 질문 3개를 전송해 의도·서비스 ID가 예상값과 일치하는지 확인한다. 키가 없으면 종료코드 2로 미실행 표시.
+- GitHub Actions Browser smoke의 Live Gemini 단계는 키가 등록된 경우만 호출한다. 미등록은 NOT RUN으로 기록한다. 외부 모델에 실제 개인정보나 서류를 보내지 않는다.

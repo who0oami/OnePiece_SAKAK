@@ -20,6 +20,18 @@ jobs:
       - run: python tests/test_chatbot_server.py
       - run: python tests/browser_smoke.py
       - run: python tests/browser_llm.py
+      - name: Live Gemini smoke (only when key is configured)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "NOT RUN: GEMINI_API_KEY repository secret missing."
+            echo "Live Gemini: not run (missing repository secret)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            set -o pipefail
+            python tests/live_gemini_smoke.py | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

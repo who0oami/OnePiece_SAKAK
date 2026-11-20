@@ -20,6 +20,7 @@ SERVICES = {
 }
 INTENTS = ("docs", "where", "target", "apply", "dept", "proxy", "services", "unknown")
 PRIVATE = re.compile(r"주민등록번호|계좌번호|비밀번호|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}|\d(?:[\s-]*\d){6,}")
+DEFAULT_MODEL = "gemini-3.5-flash-lite"
 MODEL_RE = re.compile(r"gemini-[A-Za-z0-9.-]{1,100}\Z")
 LIMIT = BoundedSemaphore(2)
 STATIC = {"/": ("index.html", "text/html; charset=utf-8"), "/index.html": ("index.html", "text/html; charset=utf-8"),
@@ -37,9 +38,9 @@ class ConfigError(Exception):
 
 def model_config():
     key = os.environ.get("GEMINI_API_KEY", "").strip()
-    model = os.environ.get("GEMINI_MODEL", "").strip()
+    model = os.environ.get("GEMINI_MODEL", "").strip() or DEFAULT_MODEL
     if not key or not MODEL_RE.fullmatch(model):
-        raise ConfigError("GEMINI_API_KEY and valid GEMINI_MODEL are required")
+        raise ConfigError("GEMINI_API_KEY and valid model ID are required")
     return key, model
 
 def validate_input(data):
