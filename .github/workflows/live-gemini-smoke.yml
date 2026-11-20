@@ -1,0 +1,21 @@
+name: Live Gemini smoke (isolated)
+on:
+  push:
+    branches: [fix/jihyun-gemini-live]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gemini:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_chatbot_server.py
+      - name: Live Gemini synthetic questions
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        run: |
+          set -o pipefail
+          python3 tests/live_gemini_smoke.py | tee -a "$GITHUB_STEP_SUMMARY"
